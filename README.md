@@ -11,12 +11,17 @@ This library supports version 1 of Cryptomkt's API.
 ### Cryptocompra
 
 - POST /payment/new_order
+
 It allows to create a payment order, delivering QR and urls to pay.
 
 - GET /payment/status
+
+
 Returns the status of a payment order
 
 - GET /payment/orders
+
+
 Returns the list of generated payment orders
 
 ## Examples
