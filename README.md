@@ -8,7 +8,7 @@ This library supports version 1 of Cryptomkt's API.
 
 ## Endpoints
 
-### Cryptocompra
+### [Cryptocompra](https://developers.cryptomkt.com/es/?shell#cryptocompra)
 
 - POST /payment/new_order
 
