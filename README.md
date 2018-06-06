@@ -17,11 +17,10 @@ This library supports version 1 of Cryptomkt's API.
 - GET /payment/status
 
 
-Returns the status of a payment order
+   Returns the status of a payment order
 
 - GET /payment/orders
 
-
-Returns the list of generated payment orders
+   Returns the list of generated payment orders
 
 ## Examples
