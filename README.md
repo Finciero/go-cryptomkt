@@ -3,7 +3,7 @@
 <img align="right" width="150" src="gopher.png">
 
 
-This project implements a Go client library for the [Cryptomkt APIs](https://developers.cryptomkt.com/es/#listado-de-ordenes-de-pago).
+This project implements a Go client library for the [Cryptomkt APIs](https://developers.cryptomkt.com).
 This library supports version 1 of Cryptomkt's API.
 
 ## Endpoints
