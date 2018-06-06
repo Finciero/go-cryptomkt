@@ -8,6 +8,18 @@ This library supports version 1 of Cryptomkt's API.
 
 ## Endpoints
 
+### [Public endpoints](https://developers.cryptomkt.com/es/?shell#endpoints-publicos)
+
+#### Markets
+
+#### Tickers
+
+#### Orders
+
+#### Trades
+
+### [Private endpoints](https://developers.cryptomkt.com/es/?shell#endpoints-autenticados)
+
 ### [Cryptocompra](https://developers.cryptomkt.com/es/?shell#cryptocompra)
 
 - POST /payment/new_order
