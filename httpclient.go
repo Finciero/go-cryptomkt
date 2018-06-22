@@ -12,8 +12,15 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
+
+	"github.com/bt51/ntpclient"
 )
+
+var baseURL = url.URL{
+	Scheme: "https",
+	Host:   "api.cryptomkt.com",
+	Path:   "v1",
+}
 
 const (
 	headerXMktAPIKey        = "X-MKT-APIKEY"
@@ -27,17 +34,21 @@ const (
 	statusWaitingForBlock   = "1"
 	statusProcessing        = "2"
 	statusSuccessfulPayment = "3"
+
+	ntpServer = "2.cl.pool.ntp.org"
 )
 
 // httpClient represent a base struct to store Http client configuration
 type httpClient struct {
 	client *http.Client
+	key    string
 	secret string
 }
 
 // APIError represents an error of CryptoMKT's REST API.
 type APIError struct {
 	ID      int    `json:"id"`
+	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
@@ -47,14 +58,17 @@ func (err *APIError) Error() string {
 }
 
 func (hc *httpClient) do(req *http.Request, values url.Values) (*http.Response, error) {
-	now := time.Now().Unix()
-	timestamp := time.Unix(now, 0)
-	hc.signRequest(req, values, timestamp)
+	t, err := ntpclient.GetNetworkTime(ntpServer, 123)
+	if err != nil {
+		return nil, err
+	}
+	now := t.Unix()
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set(headerXMktAPIKey, hc.secret)
-	req.Header.Set(headerXMktTimestamp, timestamp.String())
+	req.Header.Set(headerXMktAPIKey, hc.key)
+	hc.signRequest(req, values, now)
+	req.Header.Set(headerXMktTimestamp, fmt.Sprintf("%d", now))
 
 	resp, err := hc.client.Do(req)
 	if err != nil {
@@ -116,24 +130,22 @@ var percentEncode = strings.NewReplacer(
 	"%7A", "~",
 )
 
-func (hc *httpClient) signRequest(req *http.Request, values url.Values, timestamp time.Time) {
+func (hc *httpClient) signRequest(req *http.Request, values url.Values, timestamp int64) {
 	var buff bytes.Buffer
-	buff.WriteString(timestamp.String())
-	buff.WriteString(url.QueryEscape(req.URL.Scheme + "://" + req.URL.Host + req.URL.Path))
-
+	buff.WriteString(fmt.Sprintf("%d", timestamp))
+	buff.WriteString(req.URL.Path)
 	if values != nil {
-		buff.WriteString(percentEncode.Replace(values.Encode()))
+		for _, value := range values {
+			buff.WriteString(value[0])
+		}
 	}
 
 	sig := hmac.New(sha512.New384, []byte(hc.secret))
 	sig.Write(buff.Bytes())
-
 	sign := hex.EncodeToString(sig.Sum(nil))
-
 	buff.Reset()
-	buff.WriteString(sign)
 
-	req.Header.Set(headerXMktSignature, buff.String())
+	req.Header.Set(headerXMktSignature, sign)
 }
 
 func unmarshalJSON(r io.ReadCloser, v interface{}) error {
@@ -143,5 +155,7 @@ func unmarshalJSON(r io.ReadCloser, v interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("\n\n%s\n\n", body)
 	return json.Unmarshal(body, v)
 }
