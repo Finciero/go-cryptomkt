@@ -116,19 +116,13 @@ func (hc *httpClient) get(path string, values url.Values) (*http.Response, error
 }
 
 func (hc *httpClient) postForm(path string, values url.Values) (*http.Response, error) {
-	uri := baseURL.String() + path
-	req, err := http.NewRequest(http.MethodPost, uri, strings.NewReader(values.Encode()))
+	url := baseURL.String() + path
+	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(values.Encode()))
 	if err != nil {
 		return nil, err
 	}
 	return hc.do(req, values)
 }
-
-var percentEncode = strings.NewReplacer(
-	"+", "%20",
-	"*", "%2A",
-	"%7A", "~",
-)
 
 func (hc *httpClient) signRequest(req *http.Request, values url.Values, timestamp int64) {
 	var buff bytes.Buffer

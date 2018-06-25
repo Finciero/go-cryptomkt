@@ -6,7 +6,7 @@ import (
 	"net/url"
 )
 
-// PaymentService ...
+// PaymentService represent the implementation of Cryptomkt's service for payments.
 type PaymentService struct {
 	client *httpClient
 }
@@ -26,7 +26,7 @@ func checkStatus(status string) error {
 	}
 }
 
-// CreatePayment ...
+// CreatePayment creates a new payment request.
 func (ps *PaymentService) CreatePayment(p *PaymentRequest) (*PaymentResponse, error) {
 	resp, err := ps.client.postForm("/payment/new_order", p.Params())
 	if err != nil {
@@ -45,7 +45,7 @@ func (ps *PaymentService) CreatePayment(p *PaymentRequest) (*PaymentResponse, er
 	return r.Response, nil
 }
 
-// PaymentStatus ...
+// PaymentStatus returns the payment status of the given ID.
 func (ps *PaymentService) PaymentStatus(id string) (*PaymentResponse, error) {
 	p := url.Values{
 		"id": {id},
@@ -67,14 +67,14 @@ func (ps *PaymentService) PaymentStatus(id string) (*PaymentResponse, error) {
 	return r.Response, nil
 }
 
-// Response ...
+// Response represents the HTTP response in JSON format.
 type Response struct {
 	Status     string           `json:"status"`
 	Response   *PaymentResponse `json:"data"`
 	Pagination interface{}      `json:"pagination"`
 }
 
-// PaymentRequest represents the payment form requires by khipu to make a payment POST
+// PaymentRequest represents the payment form requires by cryptomkt to make a payment POST
 type PaymentRequest struct {
 	// Monto a cobrar de la orden de pago. CLP no soporta decimales.
 	Amount int64 `json:"to_receive"`
@@ -92,25 +92,32 @@ type PaymentRequest struct {
 	SuccessURL string `json:"success_url"`
 	// Correo electrónico de contacto para coordinar reembolsos
 	RefundEmail string `json:"refund_email"`
+	// Lenguaje de la orden de pago. Lenguajes soportados es, en y pt. Por defecto en
+	Language string `json:"language"`
 }
 
 // Params returns a map used to sign the requests
 func (p *PaymentRequest) Params() url.Values {
-	form := url.Values{
-		"to_receive":          {fmt.Sprintf("%d", p.Amount)},
-		"to_receive_currency": {p.Currency},
-		"payment_receiver":    {p.Receiver},
-		"external_id":         {p.ExternalID},
-		"callback_url":        {p.NotificationURL},
-		"error_url":           {p.ErrorURL},
-		"success_url":         {p.SuccessURL},
-		"refund_email":        {p.RefundEmail},
+	form := url.Values{}
+
+	form.Add("callback_url", p.NotificationURL)
+	form.Add("error_url", p.ErrorURL)
+	form.Add("external_id", p.ExternalID)
+	if p.Language == "" {
+		form.Add("language", "es")
+	} else {
+		form.Add("language", p.Language)
 	}
+	form.Add("payment_receiver", p.Receiver)
+	form.Add("refund_email", p.RefundEmail)
+	form.Add("success_url", p.SuccessURL)
+	form.Add("to_receive", fmt.Sprintf("%d", p.Amount))
+	form.Add("to_receive_currency", p.Currency)
 
 	return form
 }
 
-// PaymentResponse ...
+// PaymentResponse reprensents usefull data from expected response of Cryptomkt payment service.
 type PaymentResponse struct {
 	// ID interno de la orden de pago
 	ID string `json:"id"`
