@@ -8,7 +8,8 @@ import (
 
 // PaymentService represent the implementation of Cryptomkt's service for payments.
 type PaymentService struct {
-	client *httpClient
+	client  *httpClient
+	Private bool
 }
 
 func checkStatus(status string) error {
@@ -28,6 +29,7 @@ func checkStatus(status string) error {
 
 // CreatePayment creates a new payment request.
 func (ps *PaymentService) CreatePayment(p *PaymentRequest) (*PaymentResponse, error) {
+	ps.client.SetPrivate(ps.Private)
 	resp, err := ps.client.postForm("/payment/new_order", p.Params())
 	if err != nil {
 		return nil, err
@@ -47,6 +49,7 @@ func (ps *PaymentService) CreatePayment(p *PaymentRequest) (*PaymentResponse, er
 
 // PaymentStatus returns the payment status of the given ID.
 func (ps *PaymentService) PaymentStatus(id string) (*PaymentResponse, error) {
+	ps.client.SetPrivate(ps.Private)
 	p := url.Values{
 		"id": {id},
 	}
@@ -125,12 +128,40 @@ type PaymentResponse struct {
 	ExternalID string `json:"external_id"`
 	// Estado de la orden de pago
 	Status string `json:"status"`
+	// Monto de la orden de pago
+	ToReceive string `json:"to_receive"`
+	// Tipo de moneda a recibir por la orden de pago
+	ToReceiveCurrency string `json:"to_receive_currency"`
+	// Cantidad que espera la orden para ser aceptada
+	ExpectedAmount string `json:"expected_amount"`
+	// Tipo de moneda que espera la orden para ser aceptada
+	ExpectedCurrency string `json:"expected_currency"`
+	// Dirección de la orden de pago
+	DepositAddress string `json:"deposit_address"`
+	// Memo si orden debe ser pagada con XLM. Vacío por defecto.
+	DepositMemo string `json:"deposit_memo"`
+	// Correo electrónico de contacto para coordinar reembolsos
+	RefundEmail string `json:"refund_email"`
 	// URL de la imagen QR de la orden de pago
 	QR string `json:"qr"`
-	// URL de voucher de ordern de pago
+	// Observaciones
+	Obs string `json:"obs"`
+	// Url de notificación
+	CallbackURL string `json:"callback_url"`
+	// Url de error
+	ErrorURL string `json:"error_url"`
+	//	Url de éxito
+	SuccessURL string `json:"success_url"`
+	// Url de voucher de orden de pago
 	PaymentURL string `json:"payment_url"`
+	// Segundos restantes para pagar la orden de pago
+	Remanining int64 `json:"remanining"`
+	// Lenguaje asociado a la orden. Puede ser es, en o pt. Por defecto en
+	Language string `json:"language"`
 	// Fecha de creación de la orden de pago
 	CreatedAt string `json:"created_at"`
 	// Fecha de actualización de la orden de pago
 	UpdatedAt string `json:"updated_at"`
+	// Fecha del servidor
+	ServerAt string `json:"server_at"`
 }

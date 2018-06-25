@@ -7,17 +7,27 @@ import (
 // Client client that hold Services.
 type Client struct {
 	PaymentService
+	PublicService
+	PrivateService
 }
 
 // NewClient instance a new cruptomkt client.
 func NewClient(APIKey, secret string) *Client {
-	hclient := httpClient{
+	priClient := &httpClient{
+		client: &http.Client{},
+		key:    APIKey,
+		secret: secret,
+	}
+
+	pubClient := &httpClient{
 		client: &http.Client{},
 		key:    APIKey,
 		secret: secret,
 	}
 
 	return &Client{
-		PaymentService: PaymentService{&hclient},
+		PaymentService: PaymentService{priClient, true},
+		PublicService:  PublicService{pubClient, false},
+		PrivateService: PrivateService{priClient, true},
 	}
 }

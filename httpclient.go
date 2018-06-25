@@ -40,9 +40,10 @@ const (
 
 // httpClient represent a base struct to store Http client configuration
 type httpClient struct {
-	client *http.Client
-	key    string
-	secret string
+	client  *http.Client
+	key     string
+	secret  string
+	private bool
 }
 
 // APIError represents an error of CryptoMKT's REST API.
@@ -57,6 +58,10 @@ func (err *APIError) Error() string {
 	return fmt.Sprintf("cryptopay: unauthorized request, %v", err.Message)
 }
 
+func (hc *httpClient) SetPrivate(private bool) {
+	hc.private = private
+}
+
 func (hc *httpClient) do(req *http.Request, values url.Values) (*http.Response, error) {
 	t, err := ntpclient.GetNetworkTime(ntpServer, 123)
 	if err != nil {
@@ -64,11 +69,15 @@ func (hc *httpClient) do(req *http.Request, values url.Values) (*http.Response, 
 	}
 	now := t.Unix()
 
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set(headerXMktAPIKey, hc.key)
-	hc.signRequest(req, values, now)
-	req.Header.Set(headerXMktTimestamp, fmt.Sprintf("%d", now))
+	if req.Method == http.MethodPost {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
+	if hc.private {
+		req.Header.Set(headerXMktAPIKey, hc.key)
+		hc.signRequest(req, values, now)
+		req.Header.Set(headerXMktTimestamp, fmt.Sprintf("%d", now))
+	}
 
 	resp, err := hc.client.Do(req)
 	if err != nil {
