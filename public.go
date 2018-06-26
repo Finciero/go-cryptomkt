@@ -91,7 +91,7 @@ type BooksResponse struct {
 // BooksOptions represent query params for book request.
 type BooksOptions struct {
 	Market string `json:"market,omitempty" url:"market"`
-	Kind   string `json:"kind,omitempty" url:"kind"`
+	Type   string `json:"type,omitempty" url:"type"`
 	Page   int    `json:"page,omitempty" url:"page,omitempty"`
 	Limit  int    `json:"limit,omitempty" url:"limit,omitempty"`
 }

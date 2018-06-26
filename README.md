@@ -76,6 +76,8 @@ func main() {
 
 	fmt.Println(response.Status) // If everything is OK. then status = success
 	fmt.Println(response.Data) // Array of string
+
+	// See public_test.go for more details about usage.
 }
 
 ```

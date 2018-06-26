@@ -9,8 +9,6 @@ func Test_GetMarkets(t *testing.T) {
 	ps := &PublicService{
 		client: &httpClient{
 			client: &http.Client{},
-			key:    "",
-			secret: "",
 		},
 		Private: false,
 	}
@@ -30,8 +28,6 @@ func Test_GetTicker(t *testing.T) {
 	ps := &PublicService{
 		client: &httpClient{
 			client: &http.Client{},
-			key:    "",
-			secret: "",
 		},
 		Private: false,
 	}
@@ -51,18 +47,16 @@ func Test_GetBooks(t *testing.T) {
 	ps := &PublicService{
 		client: &httpClient{
 			client: &http.Client{},
-			key:    "",
-			secret: "",
 		},
 		Private: false,
 	}
 
 	opts := &BooksOptions{
 		Market: "ETHCLP",
-		Kind:   "buy",
+		Type:   "buy",
 		Page:   1,
 	}
-	br, err := ps.GetBooks(opts)
+	br, err := ps.GetOrdersBook(opts)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
@@ -77,8 +71,6 @@ func Test_GetTrades(t *testing.T) {
 	ps := &PublicService{
 		client: &httpClient{
 			client: &http.Client{},
-			key:    "",
-			secret: "",
 		},
 		Private: false,
 	}
