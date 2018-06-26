@@ -31,3 +31,14 @@ func NewClient(APIKey, secret string) *Client {
 		PrivateService: PrivateService{priClient, true},
 	}
 }
+
+// NewPublicClient expose only public endpoints.
+func NewPublicClient() *Client {
+	pubClient := &httpClient{
+		client: &http.Client{},
+	}
+
+	return &Client{
+		PublicService: PublicService{pubClient, false},
+	}
+}

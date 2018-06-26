@@ -53,6 +53,35 @@ This library supports version 1 of Cryptomkt's API.
 
 ## Examples
 
+### Markets
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/Finciero/go-cryptomkt"
+)
+
+func main() {
+	// This client expose only public methods.
+	cryptomktClient := cryptomkt.NewPublicClient()
+
+	// Request available markets
+	response, err := cryptomktClient.GetMarkets()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(response.Status) // If everything is OK. then status = success
+	fmt.Println(response.Data) // Array of string
+}
+
+```
+
+### Create new payment
+
 ```go
 package main
 
