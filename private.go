@@ -59,11 +59,11 @@ type MarketOrdersResponse struct {
 // MarketOrderOptions represents marker order query options
 type MarketOrderOptions struct {
 	// Par de mercado
-	Market string `q:"market"`
+	Market string `url:"market"`
 	// Página a consultar
-	Page int `q:"page,omitempty"`
+	Page int `url:"page,omitempty"`
 	// Límite de objetos por página. Por defecto es 20. Mínimo 20 , máximo 100
-	Limit int `q:"limit,omitempty"`
+	Limit int `url:"limit,omitempty"`
 }
 
 // GetActiveOrders return a collection of active orders.
@@ -152,7 +152,7 @@ func (ps *PrivateService) CreateOrder(mor *MarketOrderRequest) (*MarketOrderResp
 
 // OrderStatusOption represents an order status request.
 type OrderStatusOption struct {
-	ID string `q:"id"`
+	ID string `url:"id"`
 }
 
 // GetOrderStatus return an market order
