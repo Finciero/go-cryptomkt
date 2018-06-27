@@ -12,7 +12,7 @@ type PaymentService struct {
 	Private bool
 }
 
-func checkStatus(status string) error {
+func checkStatus(status int) error {
 	switch status {
 	case statusMultiplePayments:
 		return errors.New("cryptopay: Multple payments")
@@ -127,7 +127,7 @@ type PaymentResponse struct {
 	// ID externo
 	ExternalID string `json:"external_id"`
 	// Estado de la orden de pago
-	Status string `json:"status"`
+	Status int `json:"status"`
 	// Monto de la orden de pago
 	ToReceive string `json:"to_receive"`
 	// Tipo de moneda a recibir por la orden de pago
