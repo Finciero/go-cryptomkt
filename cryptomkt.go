@@ -19,15 +19,8 @@ func NewClient(APIKey, secret string) *Client {
 		secret: secret,
 	}
 
-	pubClient := &httpClient{
-		client: &http.Client{},
-		key:    APIKey,
-		secret: secret,
-	}
-
 	return &Client{
 		PaymentService: PaymentService{priClient, true},
-		PublicService:  PublicService{pubClient, false},
 		PrivateService: PrivateService{priClient, true},
 	}
 }
