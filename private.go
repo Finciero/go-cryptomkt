@@ -16,11 +16,11 @@ type PrivateService struct {
 // OrderAmount represent an Amount in MakerOrder
 type OrderAmount struct {
 	// Cantidad original de la orden
-	Original string `json:"original,omitempty"`
+	Original float64 `json:"original,string,omitempty"`
 	// Cantidad restante de la orden. Solo en órdenes activas
-	Remaining string `json:"remaining,omitempty"`
+	Remaining float64 `json:"remaining,string,omitempty"`
 	// Cantidad ejecutada de la orden. Solo en órdenes ejecutadas
-	Executed string `json:"executed,omitempty"`
+	Executed float64 `json:"executed,string,omitempty"`
 }
 
 // MarketOrder represent market order response.
@@ -32,13 +32,13 @@ type MarketOrder struct {
 	// Tipo de orden. buy o sell
 	Type string `json:"type,omitempty"`
 	// Precio límite de la orden
-	Price string `json:"price,omitempty"`
+	Price int64 `json:"price,string,omitempty"`
 	//
 	Amount *OrderAmount `json:"amount,omitempty"`
 	//  Precio de ejecución
-	ExecutionPrice string `json:"execution_price,omitempty"`
+	ExecutionPrice float64 `json:"execution_price,string,omitempty"`
 	// Precio de ejecución promedio ponderado. 0 si no se ejecuta.
-	AvgExecutionPrice int64 `json:"avg_execution_price,omitempty"`
+	AvgExecutionPrice int64 `json:"avg_execution_price,string,omitempty"`
 	// Par de mercado
 	Market string `json:"market,omitempty"`
 	// Fecha de creación
@@ -67,7 +67,7 @@ type MarketOrderOptions struct {
 }
 
 // GetActiveOrders return a collection of active orders.
-func (ps *PrivateService) GetActiveOrders(opts *MarketOrderOptions) (*MarketOrderResponse, error) {
+func (ps *PrivateService) GetActiveOrders(opts *MarketOrderOptions) (*MarketOrdersResponse, error) {
 	ps.client.SetPrivate(ps.Private)
 	v, err := query.Values(opts)
 	if err != nil {
@@ -79,7 +79,7 @@ func (ps *PrivateService) GetActiveOrders(opts *MarketOrderOptions) (*MarketOrde
 		return nil, err
 	}
 
-	var mor MarketOrderResponse
+	var mor MarketOrdersResponse
 	if err := unmarshalJSON(resp.Body, &mor); err != nil {
 		return nil, err
 	}
@@ -110,19 +110,19 @@ func (ps *PrivateService) GetExecutedOrders(opts *MarketOrderOptions) (*MarketOr
 
 // MarketOrderRequest represents a market order request.
 type MarketOrderRequest struct {
-	Market string `json:"market,omitempty"`
-	Amount string `json:"amount,omitempty"`
-	Price  string `json:"price,omitempty"`
-	Type   string `json:"type,omitempty"`
+	Market string  `json:"market,omitempty"`
+	Amount float64 `json:"amount,string,omitempty"`
+	Price  int     `json:"price,string,omitempty"`
+	Type   string  `json:"type,omitempty"`
 }
 
 // Params returns a map used to sign the requests
 func (mor *MarketOrderRequest) Params() url.Values {
 	form := url.Values{}
 
-	form.Add("amount", mor.Amount)
+	form.Add("amount", fmt.Sprintf("%f", mor.Amount))
 	form.Add("market", mor.Market)
-	form.Add("price", mor.Price)
+	form.Add("price", fmt.Sprintf("%d", mor.Price))
 	form.Add("type", mor.Type)
 
 	return form
@@ -207,9 +207,9 @@ func (ps *PrivateService) CancelOrder(mor *CancelOrderRequest) (*MarketOrderResp
 
 // Balance represents a wallet balance.
 type Balance struct {
-	Wallet    string `json:"wallet,omitempty"`
-	Available string `json:"available,omitempty"`
-	Balance   string `json:"balance,omitempty"`
+	Wallet    string  `json:"wallet,omitempty"`
+	Available float64 `json:"available,string,omitempty"`
+	Balance   float64 `json:"balance,string,omitempty"`
 }
 
 // BalanceResponse represents a balance response.

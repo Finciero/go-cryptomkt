@@ -121,25 +121,11 @@ func main() {
    Returns the list of generated payment orders
 
 
-# Test
+# Tests
 
-To test this package you need to have Cryptomkt Key and Secret, load it to environment variable
+Public test use public endpoint of CryptoMarket, and private endpoint use mocked response extracted from [docs](https://developers.cryptomkt.com).
 
-- .env
-
-```
-CRYPTOMKT_KEY='...cryptomarket key'
-CRYPTOMKT_SECRET='...cryptomarket secret
-```
-
-Load into terminal
-
-```sh
-$ export $(cat .env)
-```
-
-
-Then:
+Use this to test the library:
 
 ```sh
 $ go test
