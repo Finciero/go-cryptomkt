@@ -134,7 +134,7 @@ type MarketOrderResponse struct {
 	Data   *MarketOrder `json:"data,omitempty"`
 }
 
-// CreateOrder return a collection of active orders.
+// CreateOrder creates a new order.
 func (ps *PrivateService) CreateOrder(mor *MarketOrderRequest) (*MarketOrderResponse, error) {
 	ps.client.SetPrivate(ps.Private)
 	resp, err := ps.client.postForm("/orders", mor.Params())
@@ -203,4 +203,33 @@ func (ps *PrivateService) CancelOrder(mor *CancelOrderRequest) (*MarketOrderResp
 	}
 
 	return &morr, nil
+}
+
+// Balance represents a wallet balance.
+type Balance struct {
+	Wallet    string `json:"wallet,omitempty"`
+	Available string `json:"available,omitempty"`
+	Balance   string `json:"balance,omitempty"`
+}
+
+// BalanceResponse represents a balance response.
+type BalanceResponse struct {
+	Status string     `json:"status,omitempty"`
+	Data   []*Balance `json:"data,omitempty"`
+}
+
+// GetBalance returns balance from wallets of the given key.
+func (ps *PrivateService) GetBalance() (*BalanceResponse, error) {
+	ps.client.SetPrivate(ps.Private)
+	resp, err := ps.client.get("/balance", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var br BalanceResponse
+	if err := unmarshalJSON(resp.Body, &br); err != nil {
+		return nil, err
+	}
+
+	return &br, nil
 }
