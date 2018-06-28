@@ -16,44 +16,6 @@ This library supports version 1 of Cryptomkt's API.
 
    returns a collection of available markets.
 
-#### Tickers
-
-- GET /ticker
-
-   returns a collection of active tickers, if the market is present, the specified market ticker is returned.
-
-#### Orders
-
-- GET /book
-
-   returns a collection of active orders.
-
-#### Trades
-
-- GET /trades
-
-   returns a collection of trades made in CryptoMarket.
-
-
-### [Private endpoints](https://developers.cryptomkt.com/es/?shell#endpoints-autenticados)
-
-### [Cryptocompra](https://developers.cryptomkt.com/es/?shell#cryptocompra)
-
-- POST /payment/new_order
-
-   It allows to create a payment order, delivering QR and urls to pay.
-
-- GET /payment/status
-
-   Returns the status of a payment order
-
-- GET /payment/orders
-
-   Returns the list of generated payment orders
-
-## Examples
-
-### Markets
 
 ```go
 package main
@@ -82,7 +44,32 @@ func main() {
 
 ```
 
-### Create new payment
+#### Tickers
+
+- GET /ticker
+
+   returns a collection of active tickers, if the market is present, the specified market ticker is returned.
+
+#### Orders
+
+- GET /book
+
+   returns a collection of active orders.
+
+#### Trades
+
+- GET /trades
+
+   returns a collection of trades made in CryptoMarket.
+
+
+### [Private endpoints](https://developers.cryptomkt.com/es/?shell#endpoints-autenticados)
+
+### [Cryptocompra](https://developers.cryptomkt.com/es/?shell#cryptocompra)
+
+- POST /payment/new_order
+
+   It allows to create a payment order, delivering QR and urls to pay.
 
 ```go
 package main
@@ -124,6 +111,15 @@ func main() {
 }
 
 ```
+
+- GET /payment/status
+
+   Returns the status of a payment order
+
+- GET /payment/orders
+
+   Returns the list of generated payment orders
+
 
 # Test
 
