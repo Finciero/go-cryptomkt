@@ -125,3 +125,26 @@ func main() {
 
 ```
 
+# Test
+
+To test this package you need to have Cryptomkt Key and Secret, load it to environment variable
+
+- .env
+
+```
+CRYPTOMKT_KEY='...cryptomarket key'
+CRYPTOMKT_SECRET='...cryptomarket secret
+```
+
+Load into terminal
+
+```sh
+$ export $(cat .env)
+```
+
+
+Then:
+
+```sh
+$ go test
+```
