@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 
 	"github.com/bt51/ntpclient"
@@ -26,14 +27,14 @@ const (
 	headerXMktAPIKey        = "X-MKT-APIKEY"
 	headerXMktSignature     = "X-MKT-SIGNATURE"
 	headerXMktTimestamp     = "X-MKT-TIMESTAMP"
-	statusMultiplePayments  = "-4"
-	statusAmountDidNotMatch = "-3"
-	statusConversionFail    = "-2"
-	statusPaymentExpired    = "-1"
-	statusWaitingForPayment = "0"
-	statusWaitingForBlock   = "1"
-	statusProcessing        = "2"
-	statusSuccessfulPayment = "3"
+	statusMultiplePayments  = -4
+	statusAmountDidNotMatch = -3
+	statusConversionFail    = -2
+	statusPaymentExpired    = -1
+	statusWaitingForPayment = 0
+	statusWaitingForBlock   = 1
+	statusProcessing        = 2
+	statusSuccessfulPayment = 3
 
 	ntpServer = "2.cl.pool.ntp.org"
 )
@@ -126,6 +127,7 @@ func (hc *httpClient) get(path string, values url.Values) (*http.Response, error
 
 func (hc *httpClient) postForm(path string, values url.Values) (*http.Response, error) {
 	url := baseURL.String() + path
+
 	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(values.Encode()))
 	if err != nil {
 		return nil, err
@@ -137,9 +139,15 @@ func (hc *httpClient) signRequest(req *http.Request, values url.Values, timestam
 	var buff bytes.Buffer
 	buff.WriteString(fmt.Sprintf("%d", timestamp))
 	buff.WriteString(req.URL.Path)
+
 	if values != nil {
-		for _, value := range values {
-			buff.WriteString(value[0])
+		keys := make([]string, 0)
+		for k, _ := range values {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			buff.WriteString(values[k][0])
 		}
 	}
 
