@@ -15,7 +15,7 @@ type PaymentService struct {
 func checkStatus(status int) error {
 	switch status {
 	case statusMultiplePayments:
-		return errors.New("cryptopay: Multple payments")
+		return errors.New("cryptopay: Multiple payments")
 	case statusAmountDidNotMatch:
 		return errors.New("cryptopay: Amount didn't match")
 	case statusConversionFail:

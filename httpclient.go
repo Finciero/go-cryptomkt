@@ -142,7 +142,7 @@ func (hc *httpClient) signRequest(req *http.Request, values url.Values, timestam
 
 	if values != nil {
 		keys := make([]string, 0)
-		for k, _ := range values {
+		for k := range values {
 			keys = append(keys, k)
 		}
 		sort.Strings(keys)
@@ -167,6 +167,5 @@ func unmarshalJSON(r io.ReadCloser, v interface{}) error {
 		return err
 	}
 
-	fmt.Printf("\n\n%s\n\n", body)
 	return json.Unmarshal(body, v)
 }
