@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/bt51/ntpclient"
@@ -38,6 +39,30 @@ const (
 
 	ntpServer = "2.cl.pool.ntp.org"
 )
+
+// StatusCodeToText ...
+func StatusCodeToText(status int) string {
+	switch status {
+	case statusMultiplePayments:
+		return "multiple-payments"
+	case statusAmountDidNotMatch:
+		return "invalid-amount"
+	case statusConversionFail:
+		return "conversion-fail"
+	case statusPaymentExpired:
+		return "expired"
+	case statusWaitingForPayment:
+		return "waiting-for-payments"
+	case statusWaitingForBlock:
+		return "waiting-for-block"
+	case statusProcessing:
+		return "processing"
+	case statusSuccessfulPayment:
+		return "success"
+	default:
+		return "unknown"
+	}
+}
 
 // httpClient represent a base struct to store Http client configuration
 type httpClient struct {
@@ -168,4 +193,31 @@ func unmarshalJSON(r io.ReadCloser, v interface{}) error {
 	}
 
 	return json.Unmarshal(body, v)
+}
+
+// SpecialInt ...
+type SpecialInt int
+
+// UnmarshalJSON ...
+func (si *SpecialInt) UnmarshalJSON(b []byte) error {
+	if b[0] != '"' {
+		return json.Unmarshal(b, (*int)(si))
+	}
+
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+
+	if s == "null" {
+		*si = SpecialInt(0)
+		return nil
+	}
+
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return err
+	}
+	*si = SpecialInt(i)
+	return nil
 }

@@ -75,10 +75,10 @@ type Book struct {
 
 // Pagination represent a pagination info.
 type Pagination struct {
-	Previous int `json:"previous,string,omitempty"`
-	Limit    int `json:"limit,omitempty"`
-	Page     int `json:"page,omitempty"`
-	Next     int `json:"next,string,omitempty"`
+	Previous SpecialInt `json:"previous,omitempty"`
+	Limit    int        `json:"limit,omitempty"`
+	Page     int        `json:"page,omitempty"`
+	Next     SpecialInt `json:"next,omitempty"`
 }
 
 // BooksResponse represent a ticker.

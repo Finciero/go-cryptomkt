@@ -110,7 +110,7 @@ func Test_GetExecutedOrders(t *testing.T) {
 		return
 	}
 
-	expectedLength := 2
+	expectedLength := 3
 	actualLength := len(mor.Data)
 	if actualLength != expectedLength {
 		t.Errorf("Expected Data length to be %d, got %d", expectedLength, actualLength)

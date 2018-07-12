@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+
+	"github.com/google/go-querystring/query"
 )
 
 // PaymentService represent the implementation of Cryptomkt's service for payments.
@@ -12,7 +14,8 @@ type PaymentService struct {
 	Private bool
 }
 
-func checkStatus(status int) error {
+// CheckStatus helper function to check response status
+func CheckStatus(status int) error {
 	switch status {
 	case statusMultiplePayments:
 		return errors.New("cryptopay: Multiple payments")
@@ -40,7 +43,7 @@ func (ps *PaymentService) CreatePayment(p *PaymentRequest) (*PaymentResponse, er
 		return nil, err
 	}
 
-	if err := checkStatus(r.Response.Status); err != nil {
+	if err := CheckStatus(r.Response.Status); err != nil {
 		return nil, err
 	}
 
@@ -63,11 +66,41 @@ func (ps *PaymentService) PaymentStatus(id string) (*PaymentResponse, error) {
 		return nil, err
 	}
 
-	if err := checkStatus(r.Response.Status); err != nil {
+	if err := CheckStatus(r.Response.Status); err != nil {
 		return nil, err
 	}
 
 	return r.Response, nil
+}
+
+// PaymentOrdersOptions ...
+type PaymentOrdersOptions struct {
+	StartDate string `url:"start_date,omitempty"`
+	EndDate   string `url:"end_date,omitempty"`
+	Page      int    `url:"page,omitempty"`
+	Limit     int    `url:"limit,omitempty"`
+}
+
+// PaymentOrders returns the payment status of the given ID.
+func (ps *PaymentService) PaymentOrders(opts *PaymentOrdersOptions) (*PaymentOrdersResponse, error) {
+	ps.client.SetPrivate(ps.Private)
+	v, err := query.Values(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	url := fmt.Sprintf("/payment/orders?%s", v.Encode())
+	resp, err := ps.client.get(url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var por PaymentOrdersResponse
+	if err := unmarshalJSON(resp.Body, &por); err != nil {
+		return nil, err
+	}
+
+	return &por, nil
 }
 
 // Response represents the HTTP response in JSON format.
@@ -129,17 +162,17 @@ type PaymentResponse struct {
 	// Estado de la orden de pago
 	Status int `json:"status"`
 	// Monto de la orden de pago
-	ToReceive string `json:"to_receive"`
+	ToReceive int64 `json:"to_receive,string"`
 	// Tipo de moneda a recibir por la orden de pago
 	ToReceiveCurrency string `json:"to_receive_currency"`
 	// Cantidad que espera la orden para ser aceptada
-	ExpectedAmount string `json:"expected_amount"`
+	ExpectedAmount string `json:"expected_amount,omitempty"`
 	// Tipo de moneda que espera la orden para ser aceptada
 	ExpectedCurrency string `json:"expected_currency"`
 	// Dirección de la orden de pago
 	DepositAddress string `json:"deposit_address"`
 	// Memo si orden debe ser pagada con XLM. Vacío por defecto.
-	DepositMemo string `json:"deposit_memo"`
+	DepositMemo string `json:"deposit_memo,omitempty"`
 	// Correo electrónico de contacto para coordinar reembolsos
 	RefundEmail string `json:"refund_email"`
 	// URL de la imagen QR de la orden de pago
@@ -164,4 +197,11 @@ type PaymentResponse struct {
 	UpdatedAt string `json:"updated_at"`
 	// Fecha del servidor
 	ServerAt string `json:"server_at"`
+}
+
+// PaymentOrdersResponse ...
+type PaymentOrdersResponse struct {
+	Status     string             `json:"status,omitempty"`
+	Data       []*PaymentResponse `json:"data,omitempty"`
+	Pagination *Pagination        `json:"pagination,omitempty"`
 }
