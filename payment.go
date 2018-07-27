@@ -56,17 +56,15 @@ func (ps *PaymentService) PaymentStatus(id string) (*PaymentResponse, error) {
 	p := url.Values{
 		"id": {id},
 	}
-	resp, err := ps.client.get("/payment/status?", p)
+
+	url := fmt.Sprintf("/payment/status?%s", p.Encode())
+	resp, err := ps.client.get(url, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	var r Response
 	if err := unmarshalJSON(resp.Body, &r); err != nil {
-		return nil, err
-	}
-
-	if err := CheckStatus(r.Response.Status); err != nil {
 		return nil, err
 	}
 
@@ -162,7 +160,7 @@ type PaymentResponse struct {
 	// Estado de la orden de pago
 	Status int `json:"status"`
 	// Monto de la orden de pago
-	ToReceive int64 `json:"to_receive,string"`
+	ToReceive SpecialInt `json:"to_receive"`
 	// Tipo de moneda a recibir por la orden de pago
 	ToReceiveCurrency string `json:"to_receive_currency"`
 	// Cantidad que espera la orden para ser aceptada
@@ -172,7 +170,7 @@ type PaymentResponse struct {
 	// Dirección de la orden de pago
 	DepositAddress string `json:"deposit_address"`
 	// Memo si orden debe ser pagada con XLM. Vacío por defecto.
-	DepositMemo string `json:"deposit_memo,omitempty"`
+	DepositMemo SpecialInt `json:"deposit_memo,omitempty"`
 	// Correo electrónico de contacto para coordinar reembolsos
 	RefundEmail string `json:"refund_email"`
 	// URL de la imagen QR de la orden de pago
@@ -188,7 +186,7 @@ type PaymentResponse struct {
 	// Url de voucher de orden de pago
 	PaymentURL string `json:"payment_url"`
 	// Segundos restantes para pagar la orden de pago
-	Remanining int64 `json:"remanining"`
+	Remanining float64 `json:"remanining"`
 	// Lenguaje asociado a la orden. Puede ser es, en o pt. Por defecto en
 	Language string `json:"language"`
 	// Fecha de creación de la orden de pago

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"sort"
@@ -81,7 +82,7 @@ type APIError struct {
 
 // Error implements error interface.
 func (err *APIError) Error() string {
-	return fmt.Sprintf("cryptopay: unauthorized request, %v", err.Message)
+	return fmt.Sprintf("cryptopay: %v", err.Message)
 }
 
 func (hc *httpClient) SetPrivate(private bool) {
@@ -99,6 +100,7 @@ func (hc *httpClient) do(req *http.Request, values url.Values) (*http.Response, 
 	if req.Method == http.MethodPost {
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
+
 	if hc.private {
 		req.Header.Set(headerXMktAPIKey, hc.key)
 		hc.signRequest(req, values, now)
@@ -110,6 +112,7 @@ func (hc *httpClient) do(req *http.Request, values url.Values) (*http.Response, 
 		return nil, fmt.Errorf("client: %s resquest failed, %v", req.URL, err)
 	}
 
+	log.Println(resp.StatusCode)
 	// TODO check error response
 	switch resp.StatusCode {
 	case http.StatusBadRequest:
@@ -136,6 +139,18 @@ func (hc *httpClient) do(req *http.Request, values url.Values) (*http.Response, 
 			return nil, fmt.Errorf("cryptopay: error parsing response, %v", err)
 		}
 		return nil, &svcErr
+	case http.StatusForbidden:
+		var svcErr APIError
+		if err = unmarshalJSON(resp.Body, &svcErr); err != nil {
+			return nil, fmt.Errorf("cryptopay: error parsing response, %v", err)
+		}
+		return nil, &svcErr
+	case http.StatusNotFound:
+		var svcErr APIError
+		if err = unmarshalJSON(resp.Body, &svcErr); err != nil {
+			return nil, fmt.Errorf("cryptopay: error parsing response, %v", err)
+		}
+		return nil, &svcErr
 	default:
 		return resp, nil
 	}
@@ -143,7 +158,16 @@ func (hc *httpClient) do(req *http.Request, values url.Values) (*http.Response, 
 
 func (hc *httpClient) get(path string, values url.Values) (*http.Response, error) {
 	uri := baseURL.String() + path
-	req, err := http.NewRequest(http.MethodGet, uri, nil)
+
+	if values == nil {
+		req, err := http.NewRequest(http.MethodGet, uri, nil)
+		if err != nil {
+			return nil, err
+		}
+		return hc.do(req, values)
+	}
+
+	req, err := http.NewRequest(http.MethodGet, uri, strings.NewReader(values.Encode()))
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +189,8 @@ func (hc *httpClient) signRequest(req *http.Request, values url.Values, timestam
 	buff.WriteString(fmt.Sprintf("%d", timestamp))
 	buff.WriteString(req.URL.Path)
 
-	if values != nil {
+	switch req.URL.Path {
+	case "/v1/orders/cancel":
 		keys := make([]string, 0)
 		for k := range values {
 			keys = append(keys, k)
@@ -174,6 +199,19 @@ func (hc *httpClient) signRequest(req *http.Request, values url.Values, timestam
 		for _, k := range keys {
 			buff.WriteString(values[k][0])
 		}
+		break
+	case "/v1/payment/new_order":
+		if values != nil {
+			keys := make([]string, 0)
+			for k := range values {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			for _, k := range keys {
+				buff.WriteString(values[k][0])
+			}
+		}
+		break
 	}
 
 	sig := hmac.New(sha512.New384, []byte(hc.secret))
@@ -191,7 +229,7 @@ func unmarshalJSON(r io.ReadCloser, v interface{}) error {
 	if err != nil {
 		return err
 	}
-
+	log.Println(string(body))
 	return json.Unmarshal(body, v)
 }
 
@@ -209,7 +247,7 @@ func (si *SpecialInt) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	if s == "null" {
+	if s == "null" || s == "" {
 		*si = SpecialInt(0)
 		return nil
 	}
